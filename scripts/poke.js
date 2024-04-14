@@ -27,15 +27,20 @@ function createPokemonCard(pokemon) {
     const card = document.createElement("div");
     card.classList.add("pokemon-card");
     card.style.backgroundColor = getTypeColor(pokemon.types[0].type.name);
+    card.style.width = "180px"; // Øker bredden på kortet
+    card.style.padding = "10px"; // Legger til padding
     
     const img = document.createElement("img");
     img.src = pokemon.sprites.front_default;
+    img.style.display = "block"; // Sørger for at bildet blir sentrert
+    img.style.margin = "0 auto"; // Sørger for at bildet blir sentrert
+    img.style.width = "100px"; // Justerer størrelsen på bildet
     
     const name = document.createElement("h3");
-    name.textContent = pokemon.name;
-
+    name.textContent = pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1); // Første bokstav stor
+    
     const type = document.createElement("p");
-    type.textContent = pokemon.types[0].type.name;
+    type.textContent = pokemon.types[0].type.name.charAt(0).toUpperCase() + pokemon.types[0].type.name.slice(1); // Første bokstav stor
 
     const saveButton = document.createElement("button");
     saveButton.textContent = "Lagre";
@@ -105,6 +110,10 @@ async function renderPokemons() {
     const pokemons = await fetchPokemons();
     const container = document.getElementById("pokemon-container");
     container.innerHTML = "";
+    container.style.display = "grid"; // Setter kontaineren til CSS Grid Layout
+    container.style.gridTemplateColumns = "repeat(auto-fill, 200px)"; // Definerer kolonnebredden
+    container.style.gap = "20px"; // Legger til mellomrom mellom kortene
+    container.style.justifyContent = "center"; // Sentrerer kortene på siden
     for (const pokemon of pokemons) {
         const pokemonDetails = await fetchPokemonDetails(pokemon.url);
         if (pokemonDetails) {

@@ -1,126 +1,115 @@
-const apiUrl = "https://pokeapi.co/api/v2/pokemon?limit=50";
+const apiUrl = 'https://pokeapi.co/api/v2/pokemon';
+let allPokemons = [];
+let displayedPokemons = [];
+const allTypes = ["normal", "fire", "water", "electric", "grass", "ice", "fighting", "poison", "ground", "flying", "psychic", "bug", "rock", "ghost", "dragon", "dark", "steel", "fairy"];
 
+// Funksjon for å hente 50 Pokémon fra APIet
 async function fetchPokemons() {
     try {
-        const response = await fetch(apiUrl);
+        const response = await fetch(`${apiUrl}?limit=50`);
         const data = await response.json();
-        const pokemons = data.results;
-        return pokemons;
+        const pokemonDetailsPromises = data.results.map(pokemon => fetch(pokemon.url).then(res => res.json()));
+        allPokemons = await Promise.all(pokemonDetailsPromises);
+        allPokemons = allPokemons.map(p => ({
+            name: p.name,
+            image: p.sprites.front_default,
+            types: p.types.map(t => t.type.name)
+        }));
+        displayedPokemons = [...allPokemons];
+        displayPokemons();
+        createFilterButtons();
     } catch (error) {
-        console.error("Error fetching pokemons:", error);
-        return [];
+        console.error('Failed to fetch Pokemons:', error);
     }
 }
 
-async function fetchPokemonDetails(pokemonUrl) {
-    try {
-        const response = await fetch(pokemonUrl);
-        const data = await response.json();
-        return data;
-    } catch (error) {
-        console.error("Error fetching pokemon details:", error);
-        return null;
-    }
+// Funksjon for å vise Pokémon på nettsiden
+function displayPokemons() {
+    const container = document.getElementById('pokemon-container');
+    container.innerHTML = '';
+    container.style.display = 'flex'; // Setter display til flex for å bruke flexbox layout
+    container.style.flexWrap = 'wrap'; // Lar elementene bryte til neste linje
+    container.style.justifyContent = 'space-around'; // Distribuerer plass mellom og rundt elementene
+    container.style.alignItems = 'flex-start'; // Justerer elementer fra toppen
+
+    displayedPokemons.forEach(pokemon => {
+        const card = document.createElement('div');
+        card.style.padding = '10px';
+        card.style.margin = '5px';
+        card.style.border = '1px solid #ccc';
+        card.style.background = getBackgroundColor(pokemon.types[0]);
+        card.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+        card.style.borderRadius = '10px'; // Avrundede hjørner
+        card.style.width = '150px'; // Fast bredde for kortene
+        card.style.height = '250px'; // Fast høyde for kortene
+        card.style.display = 'flex'; // Bruker flex layout innenfor hvert kort
+        card.style.flexDirection = 'column'; // Elementene er organisert vertikalt
+        card.style.alignItems = 'center'; // Sentrerer elementene horisontalt
+        card.style.justifyContent = 'space-around'; // Distribuerer plass rundt elementene
+        card.innerHTML = `
+            <img src="${pokemon.image}" alt="${pokemon.name}" style="width:100px;height:100px;">
+            <h3>${pokemon.name}</h3>
+            <p>Type: ${pokemon.types.join(', ')}</p>
+            <button onclick="savePokemon('${pokemon.name}')">Lagre</button>
+            <button onclick="deletePokemon('${pokemon.name}')">Slett</button>
+            <button onclick="editPokemon('${pokemon.name}')">Rediger</button>
+        `;
+        container.appendChild(card);
+    });
 }
 
-function createPokemonCard(pokemon) {
-    const card = document.createElement("div");
-    card.classList.add("pokemon-card");
-    card.style.backgroundColor = getTypeColor(pokemon.types[0].type.name);
-    card.style.width = "180px"; // Øker bredden på kortet
-    card.style.padding = "10px"; // Legger til padding
-    
-    const img = document.createElement("img");
-    img.src = pokemon.sprites.front_default;
-    img.style.display = "block"; // Sørger for at bildet blir sentrert
-    img.style.margin = "0 auto"; // Sørger for at bildet blir sentrert
-    img.style.width = "100px"; // Justerer størrelsen på bildet
-    
-    const name = document.createElement("h3");
-    name.textContent = pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1); // Første bokstav stor
-    
-    const type = document.createElement("p");
-    type.textContent = pokemon.types[0].type.name.charAt(0).toUpperCase() + pokemon.types[0].type.name.slice(1); // Første bokstav stor
 
-    const saveButton = document.createElement("button");
-    saveButton.textContent = "Lagre";
-    saveButton.addEventListener("click", () => savePokemon(pokemon));
+// Funksjon for å opprette filterknapper for hver type
+function createFilterButtons() {
+    const buttonsContainer = document.getElementById('filter-buttons');
+    buttonsContainer.innerHTML = ''; // Clear existing buttons
+    allTypes.forEach(type => {
+        const button = document.createElement('button');
+        button.innerText = type.charAt(0).toUpperCase() + type.slice(1); // Capitalize the first letter
+        button.onclick = () => filterPokemons(type);
+        buttonsContainer.appendChild(button);
+    });
 
-    const deleteButton = document.createElement("button");
-    deleteButton.textContent = "Slette";
-    deleteButton.addEventListener("click", () => deletePokemon(pokemon));
-
-    const editButton = document.createElement("button");
-    editButton.textContent = "Redigere";
-    editButton.addEventListener("click", () => editPokemon(pokemon));
-
-    card.appendChild(img);
-    card.appendChild(name);
-    card.appendChild(type);
-    card.appendChild(saveButton);
-    card.appendChild(deleteButton);
-    card.appendChild(editButton);
-
-    return card;
+    // Add a button to clear the filter and show all pokemons
+    const allButton = document.createElement('button');
+    allButton.innerText = 'Vis Alle';
+    allButton.onclick = () => {
+        displayedPokemons = [...allPokemons];
+        displayPokemons();
+    };
+    buttonsContainer.appendChild(allButton);
 }
 
-function getTypeColor(type) {
-    switch (type) {
-        case "fire":
-            return "#FF7F0F"; // Oransje
-        case "water":
-            return "#6890F0"; // Blå
-        case "grass":
-            return "#78C850"; // Grønn
-        case "electric":
-            return "#F8D030"; // Gul
-        case "ice":
-            return "#98D8D8"; // Lyseblå
-        case "fighting":
-            return "#C03028"; // Rødbrun
-        case "poison":
-            return "#A040A0"; // Lilla
-        case "ground":
-            return "#E0C068"; // Beige
-        case "flying":
-            return "#A890F0"; // Lys lilla
-        case "psychic":
-            return "#F85888"; // Rosa
-        case "bug":
-            return "#A8B820"; // Mørkegrønn
-        case "rock":
-            return "#B8A038"; // Brun
-        case "ghost":
-            return "#705898"; // Lilla-blå
-        case "dragon":
-            return "#7038F8"; // Mørkeblå
-        case "dark":
-            return "#705848"; // Mørkegrå
-        case "steel":
-            return "#B8B8D0"; // Lysegrå
-        case "fairy":
-            return "#EE99AC"; // Lyserosa
-        case "normal":
-        default:
-            return "#A8A878"; // Gråbrun
-    }
+// Funksjon for å filtrere Pokémon basert på type
+function filterPokemons(type) {
+    displayedPokemons = allPokemons.filter(pokemon => pokemon.types.includes(type));
+    displayPokemons();
 }
 
-async function renderPokemons() {
-    const pokemons = await fetchPokemons();
-    const container = document.getElementById("pokemon-container");
-    container.innerHTML = "";
-    container.style.display = "grid"; // Setter kontaineren til CSS Grid Layout
-    container.style.gridTemplateColumns = "repeat(auto-fill, 200px)"; // Definerer kolonnebredden
-    container.style.gap = "20px"; // Legger til mellomrom mellom kortene
-    container.style.justifyContent = "center"; // Sentrerer kortene på siden
-    for (const pokemon of pokemons) {
-        const pokemonDetails = await fetchPokemonDetails(pokemon.url);
-        if (pokemonDetails) {
-            const card = createPokemonCard(pokemonDetails);
-            container.appendChild(card);
-        }
-    }
+// Hjelpefunksjon for å velge bakgrunnsfarge basert på typen
+function getBackgroundColor(type) {
+    const typeColors = {
+        fire: '#FDDFDF',
+        water: '#DEF3FD',
+        grass: '#DEFDE0',
+        electric: '#FCF7DE',
+        ice: '#E0FFFF',
+        fighting: '#C2B280',
+        poison: '#C8A2C8',
+        ground: '#E0C068',
+        flying: '#C6B7F5',
+        psychic: '#FA92B2',
+        bug: '#C2D21E',
+        rock: '#B8A038',
+        ghost: '#705898',
+        dragon: '#7038F8',
+        dark: '#705848',
+        steel: '#B8B8D0',
+        fairy: '#EE99AC',
+        normal: '#C6C6A7'
+    };
+    return typeColors[type] || '#F5F5F5';
 }
 
-document.addEventListener("DOMContentLoaded", renderPokemons);
+// Start funksjonen når vinduet lastes
+window.onload = fetchPokemons;

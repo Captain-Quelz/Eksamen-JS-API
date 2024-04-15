@@ -1,20 +1,26 @@
 <!DOCTYPE html>
 <html lang="no">
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
     <title>Pokémon Oversikt</title>
-</head>
-<body>
+  </head>
+  <body>
+    <h1>Pokémon</h1>
     <div id="custom-pokemon-form">
-        <input type="text" id="custom-name" placeholder="Navn på din Pokémon">
-        <input type="text" id="custom-type" placeholder="Type">
-        <button onclick="createCustomPokemon()">Lagre Pokémon</button>
+      <input type="text" id="custom-name" placeholder="Navn på din Pokémon" />
+      <input type="text" id="custom-type" placeholder="Type" />
+      <button onclick="createCustomPokemon()">Lagre Pokémon</button>
     </div>
     <div id="filter-buttons"></div>
-    <div id="saved-pokemon-container"></div>
-    <div id="pokemon-container"></div>
-
+    <div id="saved-pokemon-section">
+      <h2>Lagrede Pokémon</h2>
+      <div id="saved-pokemon-container"></div>
+    </div>
+    <div id="pokemon-section">
+      <h2>Alle Pokémon</h2>
+      <div id="pokemon-container"></div>
+    </div>
 
     <script src="scripts/poke.js"></script>
-</body>
+  </body>
 </html>

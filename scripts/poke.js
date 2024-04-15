@@ -51,124 +51,137 @@ async function fetchPokemons() {
 const defaultImage = "assets/klipartz-picachu.png"; // Standardbilde
 
 function createCustomPokemon() {
-    const name = document.getElementById("custom-name").value.trim();
-    const type = document.getElementById("custom-type").value.toLowerCase().trim();
-    if (!name || !allTypes.includes(type)) {
-        alert("Vennligst skriv inn navn og en av typene som vises under.");
-        return;
-    }
+  const name = document.getElementById("custom-name").value.trim();
+  const type = document
+    .getElementById("custom-type")
+    .value.toLowerCase()
+    .trim();
+  if (!name || !allTypes.includes(type)) {
+    alert("Vennligst skriv inn navn og en av typene som vises under.");
+    return;
+  }
 
-    const newPokemon = {
-        name: name.charAt(0).toUpperCase() + name.slice(1),
-        image: defaultImage,
-        types: [type],
-    };
+  const newPokemon = {
+    name: name.charAt(0).toUpperCase() + name.slice(1),
+    image: defaultImage,
+    types: [type],
+  };
 
-    allPokemons.push(newPokemon);
-    displayedPokemons.push(newPokemon);
-    displayPokemons();
+  allPokemons.push(newPokemon);
+  displayedPokemons.push(newPokemon);
+  displayPokemons();
 
-    // Lagrer kun brukergenererte Pokémon separat
-    updateCustomPokemonsStorage(newPokemon);
+  // Lagrer kun brukergenererte Pokémon separat
+  updateCustomPokemonsStorage(newPokemon);
 }
 
 function updateCustomPokemonsStorage(newPokemon) {
-    let customPokemons = JSON.parse(localStorage.getItem("customPokemons")) || [];
-    customPokemons.push(newPokemon);
-    localStorage.setItem("customPokemons", JSON.stringify(customPokemons));
+  let customPokemons = JSON.parse(localStorage.getItem("customPokemons")) || [];
+  customPokemons.push(newPokemon);
+  localStorage.setItem("customPokemons", JSON.stringify(customPokemons));
 }
 
 function saveCustomPokemons() {
-    const customPokemons = allPokemons.filter(p => p.image === defaultImage);
-    localStorage.setItem("savedPokemons", JSON.stringify(customPokemons));
-    displaySavedPokemons(); // Oppdater visningen av lagrede Pokémon umiddelbart etter lagring
+  const customPokemons = allPokemons.filter((p) => p.image === defaultImage);
+  localStorage.setItem("savedPokemons", JSON.stringify(customPokemons));
+  displaySavedPokemons(); // Oppdater visningen av lagrede Pokémon umiddelbart etter lagring
 }
 
 function loadCustomPokemons() {
-    const customPokemons = JSON.parse(localStorage.getItem("customPokemons")) || [];
-    allPokemons = [...allPokemons, ...customPokemons];
-    displayedPokemons = [...allPokemons];
-    displayPokemons();
+  const customPokemons =
+    JSON.parse(localStorage.getItem("customPokemons")) || [];
+  allPokemons = [...allPokemons, ...customPokemons];
+  displayedPokemons = [...allPokemons];
+  displayPokemons();
 }
-
 
 // Lagring ---------------------------------------------------------
 
 const maxPokemonSave = 5; // Maksimalt antall Pokémon brukeren kan lagre
 
 function savePokemon(pokemonName) {
-    const savedPokemons = getSavedPokemons();
-    if (savedPokemons.length >= maxPokemonSave) {
-        alert("Du har nådd maksimalt antall lagrede Pokémon. Slett en for å lagre nye.");
-        return;
-    }
+  const savedPokemons = getSavedPokemons();
+  if (savedPokemons.length >= maxPokemonSave) {
+    alert(
+      "Du har nådd maksimalt antall lagrede Pokémon. Slett en for å lagre nye."
+    );
+    return;
+  }
 
-    const pokemonToSave = allPokemons.find(pokemon => pokemon.name === pokemonName);
-    if (!pokemonToSave || savedPokemons.some(p => p.name === pokemonName)) {
-        alert("Denne Pokémon er allerede lagret eller finnes ikke.");
-        return;
-    }
+  const pokemonToSave = allPokemons.find(
+    (pokemon) => pokemon.name === pokemonName
+  );
+  if (!pokemonToSave || savedPokemons.some((p) => p.name === pokemonName)) {
+    alert("Denne Pokémon er allerede lagret eller finnes ikke.");
+    return;
+  }
 
-    savedPokemons.push(pokemonToSave);
-    localStorage.setItem("savedPokemons", JSON.stringify(savedPokemons));
-    displaySavedPokemons();  // Oppdater visningen av lagrede Pokémon umiddelbart etter lagring
+  savedPokemons.push(pokemonToSave);
+  localStorage.setItem("savedPokemons", JSON.stringify(savedPokemons));
+  displaySavedPokemons(); // Oppdater visningen av lagrede Pokémon umiddelbart etter lagring
 }
 
 function deletePokemon(pokemonName) {
-    let customPokemons = JSON.parse(localStorage.getItem("customPokemons")) || [];
-    customPokemons = customPokemons.filter(pokemon => pokemon.name !== pokemonName);
-    localStorage.setItem("customPokemons", JSON.stringify(customPokemons));  // Oppdaterer customPokemons i localStorage
+  let customPokemons = JSON.parse(localStorage.getItem("customPokemons")) || [];
+  customPokemons = customPokemons.filter(
+    (pokemon) => pokemon.name !== pokemonName
+  );
+  localStorage.setItem("customPokemons", JSON.stringify(customPokemons)); // Oppdaterer customPokemons i localStorage
 
-    let savedPokemons = getSavedPokemons();
-    savedPokemons = savedPokemons.filter(pokemon => pokemon.name !== pokemonName);
-    localStorage.setItem("savedPokemons", JSON.stringify(savedPokemons));  // Oppdaterer savedPokemons i localStorage
+  let savedPokemons = getSavedPokemons();
+  savedPokemons = savedPokemons.filter(
+    (pokemon) => pokemon.name !== pokemonName
+  );
+  localStorage.setItem("savedPokemons", JSON.stringify(savedPokemons)); // Oppdaterer savedPokemons i localStorage
 
-    allPokemons = allPokemons.filter(pokemon => pokemon.name !== pokemonName);
-    displayedPokemons = allPokemons;
-    displayPokemons();  // Oppdaterer visningen for alle Pokémon
-    displaySavedPokemons();  // Oppdaterer visningen av lagrede Pokémon
+  allPokemons = allPokemons.filter((pokemon) => pokemon.name !== pokemonName);
+  displayedPokemons = allPokemons;
+  displayPokemons(); // Oppdaterer visningen for alle Pokémon
+  displaySavedPokemons(); // Oppdaterer visningen av lagrede Pokémon
 }
 
-
 function getSavedPokemons() {
-    return JSON.parse(localStorage.getItem("savedPokemons")) || [];
+  return JSON.parse(localStorage.getItem("savedPokemons")) || [];
 }
 
 function displaySavedPokemons() {
-    const container = document.getElementById("saved-pokemon-container");
-    if (!container) {
-        console.error("Container for lagrede Pokémon mangler på siden.");
-        return;
-    }
-    container.innerHTML = "";
-    container.style.display = "flex";
-    container.style.flexWrap = "wrap";
-    container.style.justifyContent = "flex-start";
-    container.style.alignItems = "flex-start";
-    container.style.padding = "20px";
-    container.style.gap = "20px";
+  const container = document.getElementById("saved-pokemon-container");
+  if (!container) {
+    console.error("Container for lagrede Pokémon mangler på siden.");
+    return;
+  }
+  container.innerHTML = "";
+  container.style.display = "flex";
+  container.style.flexWrap = "wrap";
+  container.style.justifyContent = "flex-start";
+  container.style.alignItems = "flex-start";
+  container.style.padding = "20px";
+  container.style.gap = "20px";
 
-    const savedPokemons = getSavedPokemons();
-    savedPokemons.forEach(pokemon => {
-        const card = document.createElement("div");
-        card.style.padding = "10px";
-        card.style.margin = "10px";
-        card.style.border = "1px solid #ccc";
-        card.style.background = getBackgroundColor(pokemon.types[0]);
-        card.style.boxShadow = "0 2px 4px rgba(0,0,0,0.1)";
-        card.style.borderRadius = "10px";
-        card.style.width = "200px";
-        card.style.minHeight = "300px";
-        card.style.display = "flex";
-        card.style.flexDirection = "column";
-        card.style.alignItems = "center";
-        card.style.justifyContent = "space-between";
+  const savedPokemons = getSavedPokemons();
+  savedPokemons.forEach((pokemon) => {
+    const card = document.createElement("div");
+    card.style.padding = "10px";
+    card.style.margin = "10px";
+    card.style.border = "1px solid #ccc";
+    card.style.background = getBackgroundColor(pokemon.types[0]);
+    card.style.boxShadow = "0 2px 4px rgba(0,0,0,0.1)";
+    card.style.borderRadius = "10px";
+    card.style.width = "200px";
+    card.style.minHeight = "300px";
+    card.style.display = "flex";
+    card.style.flexDirection = "column";
+    card.style.alignItems = "center";
+    card.style.justifyContent = "space-between";
 
-        const pokemonName = pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1);
-        const formattedTypes = pokemon.types.map(type => type.charAt(0).toUpperCase() + type.slice(1)).join(", ");
-        const imageStyle = 'max-width:90%; height:auto;';
+    const pokemonName =
+      pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1);
+    const formattedTypes = pokemon.types
+      .map((type) => type.charAt(0).toUpperCase() + type.slice(1))
+      .join(", ");
+    const imageStyle = "max-width:90%; height:auto;";
 
-        card.innerHTML = `
+    card.innerHTML = `
             <img src="${pokemon.image}" alt="${pokemonName}" style="${imageStyle} margin-top:10px;">
             <h3>${pokemonName}</h3>
             <p>Type: ${formattedTypes}</p>
@@ -176,54 +189,61 @@ function displaySavedPokemons() {
                 <button onclick="removeSavedPokemon('${pokemon.name}')">Fjern</button>
             </div>
         `;
-        container.appendChild(card);
-    });
+    container.appendChild(card);
+  });
 }
 
-
 function removeSavedPokemon(pokemonName) {
-    let savedPokemons = getSavedPokemons();
-    savedPokemons = savedPokemons.filter(pokemon => pokemon.name !== pokemonName);
-    localStorage.setItem("savedPokemons", JSON.stringify(savedPokemons));
-    displaySavedPokemons();  // Oppdater visningen av lagrede Pokémon umiddelbart etter fjerning
+  let savedPokemons = getSavedPokemons();
+  savedPokemons = savedPokemons.filter(
+    (pokemon) => pokemon.name !== pokemonName
+  );
+  localStorage.setItem("savedPokemons", JSON.stringify(savedPokemons));
+  displaySavedPokemons(); // Oppdater visningen av lagrede Pokémon umiddelbart etter fjerning
 }
 
 // Funksjon for å vise Pokemon på nettsiden
 function displayPokemons() {
-    const container = document.getElementById("pokemon-container");
-    container.innerHTML = "";
-    container.style.display = "flex";
-    container.style.flexWrap = "wrap";
-    container.style.justifyContent = "flex-start"; // Justerer kortene til å starte fra venstre
-    container.style.alignItems = "flex-start";
-    container.style.padding = "20px"; // Padding rundt hele containeren
-    container.style.gap = "20px"; // Fast gap mellom elementene, sikrer jevn avstand
-  
-    displayedPokemons.forEach((pokemon) => {
-      const card = document.createElement("div");
-      card.style.padding = "10px";
-      card.style.margin = "10px";
-      card.style.border = "1px solid #ccc";
-      card.style.background = getBackgroundColor(pokemon.types[0]);
-      card.style.boxShadow = "0 2px 4px rgba(0,0,0,0.1)";
-      card.style.borderRadius = "10px";
-      card.style.width = "200px"; // Fast bredde
-      card.style.minHeight = "300px"; // Fast minimumshøyde
-      card.style.display = "flex";
-      card.style.flexDirection = "column";
-      card.style.alignItems = "center";
-      card.style.justifyContent = "space-between";
-  
-      // Stor forbokstav i navnet
-      const pokemonName = pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1);
-  
-      // Stor forbokstav på alle types
-      const formattedTypes = pokemon.types.map(type => type.charAt(0).toUpperCase() + type.slice(1)).join(", ");
-  
-      // Juster bildets størrelse hvis det er standardbildet
-      const imageStyle = pokemon.image === defaultImage ? 'width:100px; height:100px;' : 'max-width:90%; height:auto;';
-  
-      card.innerHTML = `
+  const container = document.getElementById("pokemon-container");
+  container.innerHTML = "";
+  container.style.display = "flex";
+  container.style.flexWrap = "wrap";
+  container.style.justifyContent = "flex-start"; // Justerer kortene til å starte fra venstre
+  container.style.alignItems = "flex-start";
+  container.style.padding = "20px"; // Padding rundt hele containeren
+  container.style.gap = "20px"; // Fast gap mellom elementene, sikrer jevn avstand
+
+  displayedPokemons.forEach((pokemon) => {
+    const card = document.createElement("div");
+    card.style.padding = "10px";
+    card.style.margin = "10px";
+    card.style.border = "1px solid #ccc";
+    card.style.background = getBackgroundColor(pokemon.types[0]);
+    card.style.boxShadow = "0 2px 4px rgba(0,0,0,0.1)";
+    card.style.borderRadius = "10px";
+    card.style.width = "200px"; // Fast bredde
+    card.style.minHeight = "300px"; // Fast minimumshøyde
+    card.style.display = "flex";
+    card.style.flexDirection = "column";
+    card.style.alignItems = "center";
+    card.style.justifyContent = "space-between";
+
+    // Stor forbokstav i navnet
+    const pokemonName =
+      pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1);
+
+    // Stor forbokstav på alle types
+    const formattedTypes = pokemon.types
+      .map((type) => type.charAt(0).toUpperCase() + type.slice(1))
+      .join(", ");
+
+    // Juster bildets størrelse hvis det er standardbildet
+    const imageStyle =
+      pokemon.image === defaultImage
+        ? "width:100px; height:100px;"
+        : "max-width:90%; height:auto;";
+
+    card.innerHTML = `
           <img src="${pokemon.image}" alt="${pokemonName}" style="${imageStyle} margin-top:10px;">
           <h3>${pokemonName}</h3>
           <p>Type: ${formattedTypes}</p>
@@ -233,10 +253,9 @@ function displayPokemons() {
               <button onclick="editPokemon('${pokemon.name}')">Rediger</button>
           </div>
       `;
-      container.appendChild(card);
-    });
-  }
-  
+    container.appendChild(card);
+  });
+}
 
 // Funksjon for å opprette filterknappene
 function createFilterButtons() {
@@ -313,14 +332,13 @@ function getBackgroundColor(type) {
 }
 
 window.onload = function () {
-    fetchPokemons().then(() => {
-        loadCustomPokemons();  // Laster inn kun brukergenererte Pokémon etter API-last
-        createFilterButtons();
-        styleCustomPokemonForm();
-        displaySavedPokemons();  // Sørger for å vise lagrede Pokémon ved oppstart
-    });
+  fetchPokemons().then(() => {
+    loadCustomPokemons(); // Laster inn kun brukergenererte Pokémon etter API-last
+    createFilterButtons();
+    styleCustomPokemonForm();
+    displaySavedPokemons(); // Sørger for å vise lagrede Pokémon ved oppstart
+  });
 };
-
 
 function styleCustomPokemonForm() {
   const form = document.getElementById("custom-pokemon-form");
@@ -340,4 +358,53 @@ function styleCustomPokemonForm() {
   const button = form.querySelector("button");
   button.style.padding = "10px";
   button.style.margin = "5px";
+}
+
+const headers = document.querySelectorAll("h2");
+headers.forEach((header) => {
+  header.style.color = "#333";
+  header.style.textAlign = "center";
+  header.style.marginTop = "20px";
+});
+
+// Redigering ----------------------------------------------------
+
+function editPokemon(pokemonName) {
+    const pokemonToEdit = allPokemons.find(p => p.name === pokemonName);
+    if (!pokemonToEdit) {
+        alert("Fant ikke Pokémonen som skal redigeres.");
+        return;
+    }
+
+    // Skape et enkelt redigeringsgrensesnitt
+    const newName = prompt("Skriv inn nytt navn for Pokémon:", pokemonToEdit.name);
+    if (!newName || newName.trim() === "") return;  // Avbryt om input er tom eller brukeren trykker avbryt
+
+    const newType = prompt("Skriv inn ny type for Pokémon (skriv den primære typen):", pokemonToEdit.types.join(", "));
+    if (!newType || newType.trim() === "") return;  // Avbryt om input er tom eller brukeren trykker avbryt
+
+    // Oppdaterer Pokémon-detaljer
+    pokemonToEdit.name = newName.trim();
+    pokemonToEdit.types = [newType.trim().toLowerCase()]; // Enkel håndtering for kun én type
+
+    // Oppdater localStorage hvis dette er en lagret eller brukergenerert Pokémon
+    updateStorageForEditedPokemon(pokemonToEdit);
+
+    // Oppdater visningen
+    displayPokemons();
+    if (getSavedPokemons().some(p => p.name === pokemonName)) {
+        displaySavedPokemons();  // Oppdaterer også lagrede Pokémon visningen hvis nødvendig
+    }
+}
+
+function updateStorageForEditedPokemon(editedPokemon) {
+    // Oppdaterer 'customPokemons' hvis den endrede Pokémonen er brukergenerert
+    let customPokemons = JSON.parse(localStorage.getItem("customPokemons")) || [];
+    customPokemons = customPokemons.map(p => p.name === editedPokemon.name ? editedPokemon : p);
+    localStorage.setItem("customPokemons", JSON.stringify(customPokemons));
+
+    // Oppdaterer 'savedPokemons' hvis den endrede Pokémonen er lagret
+    let savedPokemons = getSavedPokemons();
+    savedPokemons = savedPokemons.map(p => p.name === editedPokemon.name ? editedPokemon : p);
+    localStorage.setItem("savedPokemons", JSON.stringify(savedPokemons));
 }

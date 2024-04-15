@@ -115,12 +115,20 @@ function savePokemon(pokemonName) {
 }
 
 function deletePokemon(pokemonName) {
+    let customPokemons = JSON.parse(localStorage.getItem("customPokemons")) || [];
+    customPokemons = customPokemons.filter(pokemon => pokemon.name !== pokemonName);
+    localStorage.setItem("customPokemons", JSON.stringify(customPokemons));  // Oppdaterer customPokemons i localStorage
+
     let savedPokemons = getSavedPokemons();
     savedPokemons = savedPokemons.filter(pokemon => pokemon.name !== pokemonName);
-    localStorage.setItem("savedPokemons", JSON.stringify(savedPokemons));
-    displaySavedPokemons();
-    displayPokemons(); // Oppdater hovedvisningen om nødvendig
+    localStorage.setItem("savedPokemons", JSON.stringify(savedPokemons));  // Oppdaterer savedPokemons i localStorage
+
+    allPokemons = allPokemons.filter(pokemon => pokemon.name !== pokemonName);
+    displayedPokemons = allPokemons;
+    displayPokemons();  // Oppdaterer visningen for alle Pokémon
+    displaySavedPokemons();  // Oppdaterer visningen av lagrede Pokémon
 }
+
 
 function getSavedPokemons() {
     return JSON.parse(localStorage.getItem("savedPokemons")) || [];
@@ -132,20 +140,53 @@ function displaySavedPokemons() {
         console.error("Container for lagrede Pokémon mangler på siden.");
         return;
     }
-    container.innerHTML = ""; // Tømmer containeren for ny innlasting
+    container.innerHTML = "";
+    container.style.display = "flex";
+    container.style.flexWrap = "wrap";
+    container.style.justifyContent = "flex-start";
+    container.style.alignItems = "flex-start";
+    container.style.padding = "20px";
+    container.style.gap = "20px";
 
     const savedPokemons = getSavedPokemons();
     savedPokemons.forEach(pokemon => {
         const card = document.createElement("div");
+        card.style.padding = "10px";
+        card.style.margin = "10px";
+        card.style.border = "1px solid #ccc";
+        card.style.background = getBackgroundColor(pokemon.types[0]);
+        card.style.boxShadow = "0 2px 4px rgba(0,0,0,0.1)";
+        card.style.borderRadius = "10px";
+        card.style.width = "200px";
+        card.style.minHeight = "300px";
+        card.style.display = "flex";
+        card.style.flexDirection = "column";
+        card.style.alignItems = "center";
+        card.style.justifyContent = "space-between";
+
+        const pokemonName = pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1);
+        const formattedTypes = pokemon.types.map(type => type.charAt(0).toUpperCase() + type.slice(1)).join(", ");
+        const imageStyle = 'max-width:90%; height:auto;';
+
         card.innerHTML = `
-            <img src="${pokemon.image}" alt="${pokemon.name}" style="width:50px; height:50px;">
-            <p>${pokemon.name}</p>
-            <button onclick="deletePokemon('${pokemon.name}')">Slett</button>
+            <img src="${pokemon.image}" alt="${pokemonName}" style="${imageStyle} margin-top:10px;">
+            <h3>${pokemonName}</h3>
+            <p>Type: ${formattedTypes}</p>
+            <div style="width:100%; text-align:center; margin-top:10px;">
+                <button onclick="removeSavedPokemon('${pokemon.name}')">Fjern</button>
+            </div>
         `;
         container.appendChild(card);
     });
 }
 
+
+function removeSavedPokemon(pokemonName) {
+    let savedPokemons = getSavedPokemons();
+    savedPokemons = savedPokemons.filter(pokemon => pokemon.name !== pokemonName);
+    localStorage.setItem("savedPokemons", JSON.stringify(savedPokemons));
+    displaySavedPokemons();  // Oppdater visningen av lagrede Pokémon umiddelbart etter fjerning
+}
 
 // Funksjon for å vise Pokemon på nettsiden
 function displayPokemons() {

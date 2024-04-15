@@ -331,14 +331,26 @@ function getBackgroundColor(type) {
   return typeColors[type] || "#F5F5F5";
 }
 
-window.onload = function () {
-  fetchPokemons().then(() => {
-    loadCustomPokemons(); // Laster inn kun brukergenererte Pokémon etter API-last
-    createFilterButtons();
-    styleCustomPokemonForm();
-    displaySavedPokemons(); // Sørger for å vise lagrede Pokémon ved oppstart
-  });
+window.onload = function() {
+    // Hent Pokémon, opprett filterknapper, osv.
+    fetchPokemons().then(() => {
+        loadCustomPokemons(); 
+        createFilterButtons();
+        styleCustomPokemonForm();
+        displaySavedPokemons();
+    });
+
+    // Style hovedtittelen
+    styleMainTitle();
 };
+
+function styleMainTitle() {
+    const mainTitle = document.getElementById('main-title');
+    mainTitle.style.textAlign = 'center'; // Sentrerer teksten
+    mainTitle.style.color = '#333'; // Setter teksten til mørkegrå
+    mainTitle.style.marginTop = '20px'; // Gir toppmargin
+    mainTitle.style.fontFamily = 'Arial, sans-serif'; // Angir skrifttypen
+}
 
 function styleCustomPokemonForm() {
   const form = document.getElementById("custom-pokemon-form");
@@ -408,3 +420,4 @@ function updateStorageForEditedPokemon(editedPokemon) {
     savedPokemons = savedPokemons.map(p => p.name === editedPokemon.name ? editedPokemon : p);
     localStorage.setItem("savedPokemons", JSON.stringify(savedPokemons));
 }
+

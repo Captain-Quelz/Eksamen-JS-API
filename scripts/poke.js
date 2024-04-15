@@ -46,102 +46,156 @@ async function fetchPokemons() {
 
 // Custom pokemon --------------------------------------------------------
 
+// "Vennligst skriv inn navn og en av typene som vises under."
+
 const defaultImage = "assets/klipartz-picachu.png"; // Standardbilde
 
 function createCustomPokemon() {
-  const name = document.getElementById("custom-name").value.trim();
-  const type = document
-    .getElementById("custom-type")
-    .value.toLowerCase()
-    .trim();
-  if (!name || !allTypes.includes(type)) {
-    alert("Please enter a valid name and a type from the predefined list.");
-    return;
-  }
+    const name = document.getElementById("custom-name").value.trim();
+    const type = document.getElementById("custom-type").value.toLowerCase().trim();
+    if (!name || !allTypes.includes(type)) {
+        alert("Vennligst skriv inn navn og en av typene som vises under.");
+        return;
+    }
 
-  const newPokemon = {
-    name: name.charAt(0).toUpperCase() + name.slice(1),
-    image: defaultImage,
-    types: [type],
-  };
+    const newPokemon = {
+        name: name.charAt(0).toUpperCase() + name.slice(1),
+        image: defaultImage,
+        types: [type],
+    };
 
-  allPokemons.push(newPokemon); // Legg til den nye Pokémonen i hovedlisten
-  displayedPokemons.push(newPokemon); // Oppdater listen som vises
-  saveCustomPokemons(); // Lagre den nye Pokémonen i localStorage
-  displayPokemons(); // Oppdater visningen for å inkludere den nye Pokémonen
+    allPokemons.push(newPokemon);
+    displayedPokemons.push(newPokemon);
+    displayPokemons();
+
+    // Lagrer kun brukergenererte Pokémon separat
+    updateCustomPokemonsStorage(newPokemon);
+}
+
+function updateCustomPokemonsStorage(newPokemon) {
+    let customPokemons = JSON.parse(localStorage.getItem("customPokemons")) || [];
+    customPokemons.push(newPokemon);
+    localStorage.setItem("customPokemons", JSON.stringify(customPokemons));
 }
 
 function saveCustomPokemons() {
-  // Filtrer ut kun brukergenererte Pokémoner basert på bildestien
-  const customPokemons = allPokemons.filter((p) => p.image === defaultImage);
-  localStorage.setItem("customPokemons", JSON.stringify(customPokemons));
+    const customPokemons = allPokemons.filter(p => p.image === defaultImage);
+    localStorage.setItem("savedPokemons", JSON.stringify(customPokemons));
+    displaySavedPokemons(); // Oppdater visningen av lagrede Pokémon umiddelbart etter lagring
 }
 
 function loadCustomPokemons() {
-  // Last inn lagrede Pokémoner fra localStorage og legg dem til i hovedlisten
-  const customPokemons =
-    JSON.parse(localStorage.getItem("customPokemons")) || [];
-  allPokemons = allPokemons.concat(customPokemons);
-  displayedPokemons = [...allPokemons];
+    const customPokemons = JSON.parse(localStorage.getItem("customPokemons")) || [];
+    allPokemons = [...allPokemons, ...customPokemons];
+    displayedPokemons = [...allPokemons];
+    displayPokemons();
 }
 
-window.onload = function () {
-  fetchPokemons(); // Hent Pokémon fra API-et og vis dem
-  loadCustomPokemons(); // Last inn brukergenererte Pokémoner fra lokal lagring og vis dem
-  createFilterButtons(); // Opprett filtreringsknapper
-  styleCustomPokemonForm(); // Style skjemaet for å opprette nye Pokemon
-};
 
-// --------------------------------------------------------
+// Lagring ---------------------------------------------------------
+
+const maxPokemonSave = 5; // Maksimalt antall Pokémon brukeren kan lagre
+
+function savePokemon(pokemonName) {
+    const savedPokemons = getSavedPokemons();
+    if (savedPokemons.length >= maxPokemonSave) {
+        alert("Du har nådd maksimalt antall lagrede Pokémon. Slett en for å lagre nye.");
+        return;
+    }
+
+    const pokemonToSave = allPokemons.find(pokemon => pokemon.name === pokemonName);
+    if (!pokemonToSave || savedPokemons.some(p => p.name === pokemonName)) {
+        alert("Denne Pokémon er allerede lagret eller finnes ikke.");
+        return;
+    }
+
+    savedPokemons.push(pokemonToSave);
+    localStorage.setItem("savedPokemons", JSON.stringify(savedPokemons));
+    displaySavedPokemons();  // Oppdater visningen av lagrede Pokémon umiddelbart etter lagring
+}
+
+function deletePokemon(pokemonName) {
+    let savedPokemons = getSavedPokemons();
+    savedPokemons = savedPokemons.filter(pokemon => pokemon.name !== pokemonName);
+    localStorage.setItem("savedPokemons", JSON.stringify(savedPokemons));
+    displaySavedPokemons();
+    displayPokemons(); // Oppdater hovedvisningen om nødvendig
+}
+
+function getSavedPokemons() {
+    return JSON.parse(localStorage.getItem("savedPokemons")) || [];
+}
+
+function displaySavedPokemons() {
+    const container = document.getElementById("saved-pokemon-container");
+    if (!container) {
+        console.error("Container for lagrede Pokémon mangler på siden.");
+        return;
+    }
+    container.innerHTML = ""; // Tømmer containeren for ny innlasting
+
+    const savedPokemons = getSavedPokemons();
+    savedPokemons.forEach(pokemon => {
+        const card = document.createElement("div");
+        card.innerHTML = `
+            <img src="${pokemon.image}" alt="${pokemon.name}" style="width:50px; height:50px;">
+            <p>${pokemon.name}</p>
+            <button onclick="deletePokemon('${pokemon.name}')">Slett</button>
+        `;
+        container.appendChild(card);
+    });
+}
+
 
 // Funksjon for å vise Pokemon på nettsiden
 function displayPokemons() {
-  const container = document.getElementById("pokemon-container");
-  container.innerHTML = "";
-  container.style.display = "flex";
-  container.style.flexWrap = "wrap";
-  container.style.justifyContent = "flex-start"; // Justerer kortene til å starte fra venstre
-  container.style.alignItems = "flex-start";
-  container.style.padding = "20px"; // Padding rundt hele containeren
-  container.style.gap = "20px"; // Fast gap mellom elementene, sikrer jevn avstand
-
-  displayedPokemons.forEach((pokemon) => {
-    const card = document.createElement("div");
-    card.style.padding = "10px";
-    card.style.margin = "10px";
-    card.style.border = "1px solid #ccc";
-    card.style.background = getBackgroundColor(pokemon.types[0]);
-    card.style.boxShadow = "0 2px 4px rgba(0,0,0,0.1)";
-    card.style.borderRadius = "10px";
-    card.style.width = "200px"; // Fast bredde
-    card.style.minHeight = "300px"; // Fast minimumshøyde
-    card.style.display = "flex";
-    card.style.flexDirection = "column";
-    card.style.alignItems = "center";
-    card.style.justifyContent = "space-between";
-
-    // Stor forbokstav i navnet
-    const pokemonName =
-      pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1);
-
-    // Stor forbokstav på alle types
-    const formattedTypes = pokemon.types
-      .map((type) => type.charAt(0).toUpperCase() + type.slice(1))
-      .join(", ");
-
-    card.innerHTML = `
-            <img src="${pokemon.image}" alt="${pokemonName}" style="max-width:90%;height:auto;margin-top:10px;">
-            <h3>${pokemonName}</h3>
-            <p>Type: ${formattedTypes}</p>
-            <div style="width:100%; text-align:center; margin-top:10px;">
-                <button style="margin-right: 5px;" onclick="savePokemon('${pokemon.name}')">Lagre</button>
-                <button style="margin-right: 5px;" onclick="deletePokemon('${pokemon.name}')">Slett</button>
-                <button onclick="editPokemon('${pokemon.name}')">Rediger</button>
-            </div>
-        `;
-    container.appendChild(card);
-  });
-}
+    const container = document.getElementById("pokemon-container");
+    container.innerHTML = "";
+    container.style.display = "flex";
+    container.style.flexWrap = "wrap";
+    container.style.justifyContent = "flex-start"; // Justerer kortene til å starte fra venstre
+    container.style.alignItems = "flex-start";
+    container.style.padding = "20px"; // Padding rundt hele containeren
+    container.style.gap = "20px"; // Fast gap mellom elementene, sikrer jevn avstand
+  
+    displayedPokemons.forEach((pokemon) => {
+      const card = document.createElement("div");
+      card.style.padding = "10px";
+      card.style.margin = "10px";
+      card.style.border = "1px solid #ccc";
+      card.style.background = getBackgroundColor(pokemon.types[0]);
+      card.style.boxShadow = "0 2px 4px rgba(0,0,0,0.1)";
+      card.style.borderRadius = "10px";
+      card.style.width = "200px"; // Fast bredde
+      card.style.minHeight = "300px"; // Fast minimumshøyde
+      card.style.display = "flex";
+      card.style.flexDirection = "column";
+      card.style.alignItems = "center";
+      card.style.justifyContent = "space-between";
+  
+      // Stor forbokstav i navnet
+      const pokemonName = pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1);
+  
+      // Stor forbokstav på alle types
+      const formattedTypes = pokemon.types.map(type => type.charAt(0).toUpperCase() + type.slice(1)).join(", ");
+  
+      // Juster bildets størrelse hvis det er standardbildet
+      const imageStyle = pokemon.image === defaultImage ? 'width:100px; height:100px;' : 'max-width:90%; height:auto;';
+  
+      card.innerHTML = `
+          <img src="${pokemon.image}" alt="${pokemonName}" style="${imageStyle} margin-top:10px;">
+          <h3>${pokemonName}</h3>
+          <p>Type: ${formattedTypes}</p>
+          <div style="width:100%; text-align:center; margin-top:10px;">
+              <button style="margin-right: 5px;" onclick="savePokemon('${pokemon.name}')">Lagre</button>
+              <button style="margin-right: 5px;" onclick="deletePokemon('${pokemon.name}')">Slett</button>
+              <button onclick="editPokemon('${pokemon.name}')">Rediger</button>
+          </div>
+      `;
+      container.appendChild(card);
+    });
+  }
+  
 
 // Funksjon for å opprette filterknappene
 function createFilterButtons() {
@@ -217,14 +271,15 @@ function getBackgroundColor(type) {
   return typeColors[type] || "#F5F5F5";
 }
 
-// Start funksjonen når vinduet lastes
-window.onload = fetchPokemons;
-
 window.onload = function () {
-  fetchPokemons();
-  createFilterButtons();
-  styleCustomPokemonForm();
+    fetchPokemons().then(() => {
+        loadCustomPokemons();  // Laster inn kun brukergenererte Pokémon etter API-last
+        createFilterButtons();
+        styleCustomPokemonForm();
+        displaySavedPokemons();  // Sørger for å vise lagrede Pokémon ved oppstart
+    });
 };
+
 
 function styleCustomPokemonForm() {
   const form = document.getElementById("custom-pokemon-form");
